@@ -1,0 +1,45 @@
+    //std::cout << "Key: ";
+    //std::cout << this->permanent_key.data() << " : " << this->permanent_key.size() << std::endl;
+    //std::cout << "IV ";
+    //std::cout << this->permanent_iv.data() << " : " << this->permanent_iv.size() << std::endl;
+
+    //AES->Encrypt( this->permanent_key, this->permanent_iv, ss.str(), encod );
+    
+    //std::cout << "Encode: " << encod << std::endl;
+    //std::cout << encod << std::endl;
+    //std::cin.get();
+    //std::cout << "Encode Size: " << encod.size() << std::endl;
+    //std::cin.get();
+
+    //AES->Decrypt ( this->permanent_key, this->permanent_iv, encod, decod );
+
+    //std::cout << "Decod: " << decod << std::endl;
+    //std::cout << decod.size() << std::endl;
+
+/* Works FINE
+    try
+    {
+        int valid = 0;
+
+        if( ( valid = sendto( send->sockfd,
+                              encod.data(),
+                              //ss.str().data(),
+                              //sizeof(ss.str().data()),
+                              //512,
+                              encod.size(),
+                              0,
+                              (struct sockaddr*)&send->group,
+                              sizeof(send->group) 
+                            ) 
+                ) < 0 )
+            throw std::runtime_error("Cannot Write Socket");
+        std::cout << valid << std::endl;
+
+        //arr.fill(0);
+    }
+    catch(const std::runtime_error& r)
+    {
+        std::cerr << r.what() << ": " << errno << '\n';
+    }
+*/
+

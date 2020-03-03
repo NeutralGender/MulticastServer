@@ -1,0 +1,3 @@
+/root/Documents/VSCode/Multicast/ClientCopy/CMakeLists/CMakeFiles/rebuild_cache.dir
+/root/Documents/VSCode/Multicast/ClientCopy/CMakeLists/CMakeFiles/Client.dir
+/root/Documents/VSCode/Multicast/ClientCopy/CMakeLists/CMakeFiles/edit_cache.dir
