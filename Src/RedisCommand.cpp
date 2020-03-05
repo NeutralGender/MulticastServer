@@ -19,7 +19,6 @@ void RedisCommand::PipelineWrite(RedisConnection* rconnection,
     // REDIS_ERR = -1;
     int appednState = -1;
     std::cout << "Pipe:" << key_value.size() << std::endl;
-    int c = std::getchar();
 
     for(auto it = key_value.cbegin(); it != key_value.cend(); it++ )
     {
@@ -119,15 +118,27 @@ void RedisCommand::GetAllData(RedisConnection* rconnection,
             {
                 key_value.try_emplace(std::make_pair(std::string(reply->element[i]->str), 
 
-                                                     std::string{temp->element[j]->str, 
-                                                                 sizeof(temp->element[j]->str) } ),
+                                                     std::string{temp->element[j]->str,
+                                                                 strlen(temp->element[j]->str) } ), 
+                                                                 //sizeof(temp->element[j]->str) } ),
 
-                                                     std::string{temp->element[j+1]->str, 
-                                                                 sizeof(temp->element[j+1]->str) }
+                                                     std::string{temp->element[j+1]->str,
+                                                                 strlen(temp->element[j+1]->str) }
+                                                                 //sizeof(temp->element[j+1]->str) }
                                      );
             }
             freeReplyObject(temp);
         }
+
+/*
+        for( auto it = key_value.cbegin(); it != key_value.cend(); it++ )
+            std::cout << it->first.first << " - "
+                      << it->first.second << " : "
+                      << it->second.data()
+                      << std::endl;
+        std::cin.get();
+*/
+
     }
     catch(const std::exception& e)
     {

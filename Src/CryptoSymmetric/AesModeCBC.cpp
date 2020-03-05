@@ -12,10 +12,6 @@ void AesModeCBC::SetIV( std::vector<byte>& iv )
     try
     {
         prng.GenerateBlock( iv.data(), iv_length);
-
-        //std::cout << "IV:";
-        //std::cout << iv.data();
-        //std::cout << std::endl;
     }
     catch(const CryptoPP::Exception& e)
     {
@@ -29,7 +25,7 @@ void AesModeCBC::SetKeyIVLength(std::vector<byte>& key,
     try
     {
         key.resize(this->key_length);
-        iv.resize(iv_length);
+        iv.resize(this->iv_length);
     }
     catch(const std::exception& e)
     {
@@ -47,17 +43,17 @@ void AesModeCBC::Encrypt( const std::vector<byte>& key,
         CBC_Mode<AES>::Encryption e;
         e.SetKeyWithIV( key.data(), key.size(), iv.data() );
 
-        /*
-        StringSource ss(plaintext,
-                        true,
-                        new StreamTransformationFilter // adding padding as required
-                        (                             //  CBC must be padded
-                            e,
-                            new CryptoPP::StringSink(encoded)
-                        )
-                        );
-        */
-
+        
+        StringSource ss( plaintext,
+                         true,
+                         new StreamTransformationFilter // adding padding as required
+                         (                             //  CBC must be padded
+                             e,
+                             new CryptoPP::StringSink(encoded)
+                         )
+                       );
+        
+/*
        StringSource ss(plaintext,
                         true,
                         new StreamTransformationFilter // adding padding as required
@@ -68,9 +64,8 @@ void AesModeCBC::Encrypt( const std::vector<byte>& key,
                                 new CryptoPP::StringSink(encoded)
                             )
                         )
-                        );
-
-        //std::cout << "Encoded:" << encoded << std::endl;
+                      );
+*/
     }
     catch(const CryptoPP::Exception& e)
     {
@@ -91,7 +86,7 @@ void AesModeCBC::Decrypt( const std::vector<byte>& key,
         CBC_Mode<AES>::Decryption d;
         d.SetKeyWithIV( key.data(), key.size(), iv.data() );
 
-        /*
+        
         StringSource ss(encoded,
                         true,
                         new StreamTransformationFilter // removing padding as required
@@ -100,8 +95,8 @@ void AesModeCBC::Decrypt( const std::vector<byte>& key,
                             new CryptoPP::StringSink(plaintext)
                         )
                         );
-        */
-
+        
+/*
        StringSource ss(encoded,
                         true,
                         new CryptoPP::HexDecoder
@@ -113,7 +108,8 @@ void AesModeCBC::Decrypt( const std::vector<byte>& key,
                             )
                         )
                         );
-        std::cout << "Plain: " << plaintext << std::endl;
+*/
+        //std::cout << "Plain: " << plaintext << std::endl;
     
     }
     catch(const CryptoPP::Exception& e)
@@ -136,6 +132,7 @@ void AesModeCBC::Decrypt( const std::vector<byte>& key,
         CBC_Mode<AES>::Decryption d;
         d.SetKeyWithIV( key.data(), key.size(), iv.data() );
 
+/*
         CryptoPP::ArraySource ss(encoded,
                                  true,
                                  new CryptoPP::HexDecoder
@@ -147,7 +144,19 @@ void AesModeCBC::Decrypt( const std::vector<byte>& key,
                                                                 plaintext.size())
                                     )
                                  )
-                                );    
+                                );
+*/
+
+        CryptoPP::ArraySource ss(encoded,
+                                 true,
+                                 new StreamTransformationFilter // removing padding as required
+                                 (                             //  CBC must be padded
+                                    d,
+                                    new CryptoPP::ArraySink(plaintext.data(),
+                                                            plaintext.size())
+                                 )
+                                );   
+            
     }
     catch(const CryptoPP::Exception& e)
     {

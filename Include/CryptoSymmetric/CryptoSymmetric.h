@@ -1,12 +1,12 @@
 #ifndef _CRYPTOSYMMETRIC
 #define _CRYPTOSYMMETRIC
 
+typedef unsigned char byte;
+
 #include "crypto++/secblock.h"
 
 #include <vector>
 #include <string>
-
-typedef unsigned char byte;
 
 class CryptoSymmetric
 {

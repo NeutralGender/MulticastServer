@@ -77,7 +77,7 @@ void SendClient::Authentification(  AesModeCBC* AES,
 {
 // Load Bob Public Key from file( me must trust this key )
     RSA Bob(2048);
-    Bob.LoadPublicKeyFromFile("/root/Documents/VSCode/Authentication/server_pubkey.dat");
+    Bob.LoadPublicKeyFromFile("server_pubkey.dat");
 // End Load Bob Public Key from file( me must trust this key )
     
 // Generate RSA key pair for new connection to server
@@ -87,18 +87,15 @@ void SendClient::Authentification(  AesModeCBC* AES,
 
 // Send Alice Login Encrypted By Bob Public Key
     std::string Alice_login; // Alice_login ciphertext is encoded in Hex
-    Bob.Encrypt("Bob", Alice_login);
+    Bob.Encrypt("Alice", Alice_login);
     int n = 0;
 
-    n = write(socketfd, Alice_login.data(), Alice_login.size() );
+    n = write( socketfd, Alice_login.data(), Alice_login.size() );
 // End Send Alice Login Encrypted By Bob Key
 
 // Send Alice public_key To Bob
     std::string Alice_public_key; // Key is encoded in Base64
     Alice.SavingPublicKeyToString(Alice_public_key);
-
-    std::cout << "Alice_public_key: ";
-    std::cout << Alice_public_key << std::endl;
 
     sleep(1);
 
@@ -112,7 +109,7 @@ void SendClient::Authentification(  AesModeCBC* AES,
     recv_message.resize(768);
 
     n = read ( socketfd, &recv_message[0], 768 );
-    std::cout << "Recv_message AES_KEY: " << recv_message.data() << std::endl;
+    //std::cout << "Recv_message AES_KEY: " << recv_message.data() << std::endl;
     std::vector<byte> AES_KEY(Bob.Verify( Alice.Decrypt(recv_message) ) );
 // End Receive Encrypted by Alice public and Signed by Bob private Key from Bob
 
@@ -120,17 +117,15 @@ void SendClient::Authentification(  AesModeCBC* AES,
     sleep(1);
 
     n = read ( socketfd, &recv_message[0], 768 );
-    //std::vector<byte> AES_IV(Bob.Verify( Alice.Decrypt(recv_message) ) );
-    std::vector<byte> AES_IV( Bob.Verify( Alice.Decrypt(recv_message) ) );
+    std::vector<byte>AES_IV(Bob.Verify( Alice.Decrypt(recv_message) ) );
 // End Receive Encrypted Signed IV by private key from Bob
 
 // Receive Encrypted Signed Ticket by private key from Bob
     sleep(1);
 
     n = read ( socketfd, &recv_message[0], 768 );
-    //std::vector<byte> AES_Ticket(Bob.Verify( Alice.Decrypt(recv_message) ) );
     AES_Ticket = (Bob.Verify( Alice.Decrypt(recv_message) ) );
-    std::cout << "Ticket: " << AES_Ticket.data() << std::endl << AES_Ticket.size() << std::endl;
+    //std::cout << "Ticket: " << AES_Ticket.data() << std::endl << AES_Ticket.size() << std::endl;
 // End Receive Encrypted Signed Ticket by private key from Bob
 
 // Calculate Digest: SHA3_256( AES_Ticket + password );
@@ -139,8 +134,6 @@ void SendClient::Authentification(  AesModeCBC* AES,
     sha->AddDataToSHA3object(std::string{AES_Ticket.begin(), AES_Ticket.end()}+"I am Client");
     sha->SetDigestStringSHAsize(digest);
     sha->CalculateDigest(digest);
-    
-    std::cout << "Digest: " << digest << " : " << digest.size() << std::endl;
 // End Calculate Digest: SHA3_256( AES_Ticket + password );
 
 // Encrypt Hash3_256 by Ephemere Key Received from Bob and Send it to him
@@ -148,38 +141,33 @@ void SendClient::Authentification(  AesModeCBC* AES,
     //AesModeCBC AES(CryptoPP::AES::DEFAULT_KEYLENGTH, CryptoPP::AES::BLOCKSIZE);
     AES->Encrypt( AES_KEY, AES_IV, digest, aes_cipher );
 
-    std::cout << aes_cipher << " : " << aes_cipher.size() << std::endl;
     sleep(1);
 
     n = write( socketfd, aes_cipher.data(), aes_cipher.size() );
 // End Encrypt Hash3_256 by Ephemere Key Received from Bob
 
-// Receive AES Permanent Key from Bob
-    recv_message.resize(64);
-    std::cout << recv_message.size() << std::endl;
-    read( socketfd, &recv_message[0], 64 );
+// Receive AES Permanent Key form Bob
+    sleep(1);
 
-    std::cout << "PermanentKey: " << recv_message << std::endl;
-    
-    AES->Decrypt( AES_KEY, AES_IV, 
-                 recv_message, 
-                 permanent_key );
+    recv_message.resize(32);
+    read( socketfd, &recv_message[0], 32 );
 
+    AES->Decrypt( AES_KEY, AES_IV, recv_message, permanent_key );
+
+    std::cout << "AES_KEY: ";
     std::cout << permanent_key.data() << std::endl;
-// END Receive AES Permanent Key from Bob
+// END Receive AES Permanent Key form Bob
 
 // Receive AES Permanent IV from Bob
-    recv_message.resize(64);
-    std::cout << recv_message.size() << std::endl;
-    read( socketfd, &recv_message[0], 64 );
+    recv_message.resize(32);
+    read( socketfd, &recv_message[0], 32 );
 
-    std::cout << "PermanentIV: " << recv_message << std::endl;
-    
-    AES->Decrypt( AES_KEY, AES_IV, 
-                 recv_message, 
-                 permanent_iv );
+    AES->Decrypt( AES_KEY, AES_IV, recv_message, permanent_iv );
 
-    std::cout << permanent_iv.data() << std::endl;
+    std::cout << "AES_IV: ";
+    std::cout << permanent_iv.data();
+    std::cout << std::endl;
 // End Receive AES Permanent IV from Bob
+
 
 }

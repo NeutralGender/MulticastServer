@@ -1,6 +1,7 @@
 #ifndef _AES_MODE_CBC
 #define _AES_MODE_CBC
 
+typedef unsigned char byte;
 
 #include "CryptoAes.h"
 

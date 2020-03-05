@@ -6,6 +6,4 @@ CryptoSymmetric::CryptoSymmetric( const size_t& key_length_ )
 }
 
 CryptoSymmetric::~CryptoSymmetric()
-{
-    
-}
+{}
