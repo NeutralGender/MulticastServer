@@ -13,6 +13,7 @@ typedef unsigned char byte;
 #include <map>
 #include <array>
 #include <vector>
+#include <chrono>
 
 #include <boost/serialization/map.hpp>
 #include <boost/archive/text_oarchive.hpp>

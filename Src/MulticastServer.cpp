@@ -31,8 +31,74 @@ void MulticastServer::ReceiveMsg(ReceiveSocketMulticast* receive)
 void MulticastServer::SendMsg(SendSocketMulticast* send,
                               AesModeCBC* AES)
 {
+    std::map<std::pair<std::string, std::string>, std::string> dst;
+    size_t current_pos = 0;
+    std::string encode; // string fro encryption which will be send by multicast
+    std::stringstream ss;
+
     if( !key_value.empty() )
     {
+        auto start = std::chrono::high_resolution_clock::now();
+
+        while( current_pos < key_value.size() )
+        {
+            boost::archive::text_oarchive oa(ss);
+            
+            // iterators for insert from key_value
+            auto first = std::next( std::make_move_iterator( key_value.begin() ), 
+                                    current_pos 
+                                  );
+                                  
+            auto last = std::next( std::make_move_iterator( key_value.begin() ), 
+                                   current_pos+1'000 
+                                 );
+
+            dst.insert( std::make_move_iterator( first ), 
+                        std::make_move_iterator( last )
+                      );
+        
+        // Serialization
+            oa << std::move( dst );
+
+        // Encrypt
+            AES->Encrypt( this->permanent_key,
+                          this->permanent_iv, 
+                          ss.str(), 
+                          encode 
+                        );
+        // Send Multicast
+            int send_count = sendto( send->sockfd,
+                                     std::move( encode.data() ),
+                                     encode.size(),
+                                     0,
+                                     (struct sockaddr*)&send->group,
+                                     sizeof(send->group) 
+                                   );
+
+            current_pos += 1'000;            
+            dst.clear();
+            encode.clear();
+            ss.clear();
+        }
+        auto stop = std::chrono::high_resolution_clock::now();
+
+        // Send final message( means we will not send packages more now )
+        int send_count = sendto( send->sockfd,
+                                 "",
+                                 sizeof(""),
+                                 0,
+                                 (struct sockaddr*)&send->group,
+                                 sizeof(send->group) 
+                               );
+            
+        std::chrono::duration< double, std::milli > fp_ms = stop - start;
+        std::cout << "while end: " << fp_ms.count() << std::endl;
+        std::cin.get();
+    
+    }
+        
+
+/*
         std::stringstream ss;
         boost::archive::text_oarchive oa(ss);
         oa << key_value; 
@@ -65,7 +131,7 @@ void MulticastServer::SendMsg(SendSocketMulticast* send,
         std::cout << ss.str().size() << " : " << start_pos << std::endl;
         //std::cout << "while end" << std::endl;
         //std::cin.get();
-
+*/
 /*
         AES->Encrypt( this->permanent_key, this->permanent_iv, ss.str(), encod );
         int len = encod.size() + (encod.size() % 128);
@@ -97,9 +163,9 @@ void MulticastServer::SendMsg(SendSocketMulticast* send,
             std::cout << "Size: " << encod.size() << std::endl;
             std::cout << "Len: " << len << std::endl;
 */
-    }
 
 }
+
 
 void MulticastServer::WriteToDB(DBDriver *db_driver)
 {
